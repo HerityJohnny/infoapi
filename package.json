@@ -1,0 +1,29 @@
+{
+  "name": "infoapi",
+  "version": "1.0.0",
+  "description": "An api for getting informations",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HerityJohnny/infoapi.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HerityJohnny/infoapi/issues"
+  },
+  "homepage": "https://github.com/HerityJohnny/infoapi#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-graphql": "^0.11.0",
+    "express-handlebars": "^5.2.0",
+    "graphql": "^15.4.0",
+    "jsonwebtoken": "^8.5.1",
+    "pg": "^8.4.2",
+    "uuidv4": "^6.2.5"
+  }
+}
