@@ -136,7 +136,7 @@ exports.signup = async (req,res) => {
                           /**
                            * Sign user with json web token
                            */
-                          jwt.sign({id : author.rows[0].id, username : author.rows[0].username}, process.env.JWT_KEY, {expiresIn : 604800000}, (err,token) => {
+                          jwt.sign({id : author.rows[0].authorid, username : author.rows[0].username}, process.env.JWT_KEY, {expiresIn : 604800000}, (err,token) => {
                               /**
                                * store token to cookie
                                */
@@ -173,3 +173,37 @@ exports.signup = async (req,res) => {
         })
      }
 }
+
+
+/**
+ * Update author
+ */
+
+ exports.update_author = async (req,res) => {
+     /**
+      * Get author id from req object
+      */
+     const { authorid } = req.user;
+
+     /**
+      * Get data to update from req.body
+      */
+     const {} = req.body;
+
+     //use the id to delete user
+     db.query("UPDATE Authors SET data = $1 WHERE authorid = authorid")
+     .then()
+     .catch();
+ }
+
+ 
+/**
+  * Logout user
+  */
+
+  exports.logout = async (req,res) => {
+      res.clearCookie("author");
+      res.status(200).json({
+        message: "logout successful"
+    })
+  }
