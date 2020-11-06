@@ -196,7 +196,34 @@ exports.signup = async (req,res) => {
      .catch();
  }
 
+/**
+ * 
+ * @param {Delete} req 
+ * @param {json} res 
+ */
  
+ exports.delete_author = async (req,res) => {
+     /**
+      * get User from req.user obj
+      */
+     const { id } = req.user;
+
+     db.query("DELETE FROM Authors WHERE authorid = $1",[id])
+     .then(resp => {
+         res.clearCookie("author");
+         res.status(200).json({
+             "success" : true,
+             "message" : "User Deleted Successfully",
+             "deleted": resp.rowCount
+         })
+     })
+     .catch(err => {
+         res.status(400).json({
+             "success" : false,
+             "message" : "An Error occured while delecting author"
+         })
+     })
+ }
 /**
   * Logout user
   */
