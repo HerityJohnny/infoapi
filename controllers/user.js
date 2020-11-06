@@ -16,7 +16,7 @@ exports.signup = async (req,res) => {
         lastname: Joi.string().trim().alphanum().required(),
         email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }).required(),
         username: Joi.string().trim().alphanum().min(3).max(30).required(),
-        password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{8,30}','i')).required(),
+        password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{8,30}')).required(),
         skills: Joi.string().trim().required(),
         bio: Joi.string().trim().min(5).max(300).required()
     });
@@ -69,7 +69,7 @@ exports.signup = async (req,res) => {
             res.status(400).json({
             "success" : false,
                 "message" :"Author creation failed",
-                "error" : err.code
+                "Errorcode" : err.code
             });
          });
       })
@@ -82,3 +82,94 @@ exports.signup = async (req,res) => {
          })
      }
     }
+
+
+
+    /**
+     * User signin api functionality
+     * Access data from authors.rows[0]
+     */
+    exports.signin = async(req,res) => {
+     /**
+      * Create a joi schema to validate input credentials
+      */
+     const signin_Schema = Joi.object().keys({
+        email : Joi.string().trim().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }).required(),
+        password: Joi.string().trim().pattern(new RegExp('^[a-zA-Z0-9]{8,30}')).required()
+     });
+
+     //Validate using Joi.validate
+     //destructure objects from the schema
+     const { error, value } = await signin_Schema.validate(req.body);
+
+     if(!error) {
+         //authorize user
+
+         /**
+          * Destructure user from the value object 
+          */
+         const { email, password } = value;
+
+         /**
+          * Check if user exits
+          */
+          
+          db.query("SELECT * FROM Authors WHERE email = $1", [email])
+          .then(author => {
+              if(author.rowCount <= 0) {
+                  res.status(401).json({
+                      "success" : false,
+                      "message": "No a user wth that email"
+                  })
+              } else {
+                  /**
+                   * User found then compare password
+                   */
+                  bcrypt.compare(password, author.rows[0].password)
+                  .then(pass => {
+                      if(!pass) {
+                          res.status(400).json({
+                              "success" : false,
+                              "message" : "Password incorrect"
+                          })
+                      } else {
+                          /**
+                           * Sign user with json web token
+                           */
+                          jwt.sign({id : author.rows[0].id, username : author.rows[0].username}, process.env.JWT_KEY, {expiresIn : 604800000}, (err,token) => {
+                              /**
+                               * store token to cookie
+                               */
+                              res.cookie("author", token, {httpOnly: true, maxAge : 604800000});
+                              res.status(200).json({
+                                  "success" : true,
+                                  "message" : "login successful you can now create a post"
+                              })
+                          })
+                      }
+                  })
+                  .catch(err => {
+                      res.status(400).json({
+                          "success" : false,
+                          "message" : "An error occured when validating password",
+                          "error" : err.error
+                      })
+                  });
+              }
+          })
+          .catch(err => {
+              res.status(400).json({
+                  "success" : false,
+                  "message" : 'an error occured',
+                  "Error" : err.code
+              })
+          });
+     } else {
+        //send back eror message - Invalid credentials
+        res.status(400).json({
+            "success" : false,
+            "message" : "Invalid credentials - check email or password",
+            "error" : error.details[0].message
+        })
+     }
+}
