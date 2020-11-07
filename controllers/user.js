@@ -60,11 +60,12 @@ exports.signup = async (req,res) => {
       * Hash data using bcrypt
       */
 
+
       bcrypt.genSalt(10,(err,salt) => {
             bcrypt.hash(password, salt, (err,hash) => {
             let hashpassword = hash;
         /**
-         * Insert data into database
+         * Insert data into database after verifying user dosent exist
          */
 
          db.query("INSERT INTO Authors (authorid,firstname,lastname,email,username,password,skills,bio,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *",
