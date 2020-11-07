@@ -3,6 +3,11 @@ const { generateuuid } = require('../utils/uuid_generator');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const Joi = require("joi");
+// const { updateAuthor } = require("../utils/update_helper");
+
+/**
+ * Code for CRUD Operation - Author
+ */
 /**
  * @query data from db
  */
@@ -200,22 +205,58 @@ exports.signup = async (req,res) => {
  * Update author
  */
 
- exports.update_author = async (req,res) => {
+ exports.update_author_email = async (req,res) => {
+
+    //Store Date when account was updated
+     //few setups
+     let day, month, year;
+     day = new Date().getDay();
+     month = new Date().getMonth();
+     year = new Date().getFullYear();
+     const updated_at = `${year}-${month}-${day}`;
+
      /**
       * Get author id from req object
       */
-     const { authorid } = req.user;
-
-     /**
-      * Get data to update from req.body
+     const { id } = req.user;
+    /**
+     * Validate data with joi
+     */
+    const ValidEmail = Joi.object().keys({
+        email : Joi.string().trim().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }).required()
+    })
+    const {error , value} = await ValidEmail.validate(req.body);
+    if(!error) {
+        /**
+      * Get data to update from value
       */
-     const {} = req.body;
+        const { email } = value;
+        db.query('UPDATE Authors SET email  = $1, updated_at = $2 WHERE authorid = $3 RETURNING email, updated_at', [email,updated_at,id])
+        .then(resp => {
+            res.status(200).json({
+             "success" : true,
+             "message" : `Updated email Successfully`,
+             "Updated data" : resp.rows[0].email,
+             "Updated at" : resp.rows[0].updated_at
+         });
+        })
+        .catch(err => {
+             res.status(400).json({
+             "success" : false,
+             "message" : "An Error Occured when Updating",
+             "error" : err.message
+         })
+        });
 
-     //use the id to delete user
-     db.query("UPDATE Authors SET data = $1 WHERE authorid = authorid")
-     .then()
-     .catch();
- }
+    } else {
+        res.status(400).json({
+            "success": false,
+            "message" : "Data is not valid",
+            "error" : error.details[0].message
+        });
+        console.log(error)
+    }
+ }  
 
 /**
  * 
@@ -255,3 +296,8 @@ exports.signup = async (req,res) => {
         message: "logout successful"
     })
   }
+
+
+  /**
+   * Code for crud operation for Articles
+   */
