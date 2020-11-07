@@ -22,7 +22,7 @@ exports.signup = async (req,res) => {
     });
 
 
-    //Validate data
+     //Validate data
      const { error, value } = await Schema.validate(req.body);
      if(!error) {
 
@@ -45,7 +45,18 @@ exports.signup = async (req,res) => {
       */
 
       const authorId = generateuuid();
-     /**
+
+      // Check if user eith that email exist already
+
+      db.query("SELECT * FROM Authors WHERE email = $1", [email])
+      .then(author => {
+          if(author.rowCount >= 1) {
+              res.status(401).json({
+                  "success" : false,
+                  "message" : "User already exist, please login instead"
+              })
+          } else {
+                   /**
       * Hash data using bcrypt
       */
 
@@ -69,11 +80,20 @@ exports.signup = async (req,res) => {
             res.status(400).json({
             "success" : false,
                 "message" :"Author creation failed",
-                "Errorcode" : err.code
+                "error" : err.code
             });
          });
       })
     });
+          }
+      })
+      .catch(err => {
+          res.status(400).json({
+              "success": false,
+              "message" : "An Error Occured When finding user",
+              "Error" : error.details[0].message
+          })
+      })
      } else {
           res.status(400).json({
              "success" : false,

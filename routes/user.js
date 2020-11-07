@@ -12,3 +12,8 @@ router.post('/delete_author',verify, delete_author);
 router.post('/logout', verify, logout);
 
 module.exports = router;
+
+
+
+
+
