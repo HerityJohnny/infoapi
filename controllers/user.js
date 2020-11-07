@@ -56,7 +56,7 @@ exports.signup = async (req,res) => {
                   "message" : "User already exist, please login instead"
               })
           } else {
-                   /**
+      /**
       * Hash data using bcrypt
       */
 
