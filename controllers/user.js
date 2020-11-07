@@ -387,3 +387,43 @@ exports.signup = async (req,res) => {
            })
        })
    }
+
+   /**
+    * Delete one article
+    * You need to be authenticated and authorize to delete your posts
+    */
+
+    exports.delete_one_article = async (req,res) => {
+        /**
+         * Get author id from req object
+         */
+        const { id } = req.user;
+
+        /**
+         * get article id from the req.params
+         */
+        const { articleid } = req.params;
+
+        /**
+         * Run db query to delete articles
+         */
+        db.query('DELETE FROM Articles WHERE articleid = $1 AND authorid = $2', [articleid,id])
+        .then(article => {
+            if(articles.rowCount <= 0) {
+                res.status(200).json({
+                    "message": "Article Not Found"
+                })
+            }
+            res.status(200).json({
+                "success" : true,
+                "message" : "Article Deleted",
+                "deleted" : article.rowCount
+            })
+        })
+        .catch(err => {
+            res.status(400).json({
+                "success": false,
+                "errorMessage" : err.message
+            })
+        })
+    }
