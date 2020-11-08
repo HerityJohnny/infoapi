@@ -73,8 +73,8 @@ exports.signup = async (req,res) => {
          * Insert data into database after verifying user dosent exist
          */
 
-         db.query("INSERT INTO Authors (authorid,firstname,lastname,email,username,password,skills,bio,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *",
-        [authorId,firstname,lastname,email,username,hashpassword,skills,bio,created_at])
+         db.query("INSERT INTO Authors (authorid,firstname,lastname,email,username,password,skills,bio) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *",
+        [authorId,firstname,lastname,email,username,hashpassword,skills,bio])
         .then(author => {
                 res.status(200).json({
                 "success" : true,
@@ -304,13 +304,13 @@ exports.signup = async (req,res) => {
 
    exports.create_article = async (req,res) => {
         //Store Date of Article creation
-        //few setups
+        //few setups -- bugs here
         let day, month, year;
         day = new Date().getDay();
         month = new Date().getMonth();
         year = new Date().getFullYear();
         const created_at = `${year}-${month}-${day}`;
-
+        console.log(created_at)
        /**
         * First create a schema to validate data coming in
         * Data Expected : title, body
@@ -332,17 +332,17 @@ exports.signup = async (req,res) => {
             */
            const articleid = generateuuid();
 
-           const { id } = req.user;
+           const { id, username } = req.user;
            /**
             * Insert data into queries
             */
-           db.query('INSERT INTO Articles (title,body,articleid,authorid,created_at) VALUES ($1,$2,$3,$4,$5) RETURNING articleid,created_at', [title,body,articleid,id,created_at])
+           db.query('INSERT INTO Articles (title,body,articleid,authorid,username) VALUES ($1,$2,$3,$4,$5) RETURNING articleid, username', [title,body,articleid,id,username])
            .then(article => {
                res.status(200).json({
                    "success" : true,
                    "message": "Article created successfully",
                    "articleid": article.rows[0].articleid,
-                   "created_at" : article.rows[0].created_at
+                   "Author username" : article.rows[0].username
                });
            })
            .catch(err => {
@@ -364,11 +364,11 @@ exports.signup = async (req,res) => {
    /**
     * Get all articles
     */
-   exports.get_all_posts = async (req,res) => {
+   exports.get_all_articles = async (req,res) => {
        /**
         * You dont have to be authenticated for you to get all
         */
-       db.query('SELECT body, title FROM Articles')
+       db.query('SELECT body, title, username FROM Articles')
        .then(articles => {
            if(articles.rowCount <= 0) {
                res.status(200).json({
@@ -426,4 +426,42 @@ exports.signup = async (req,res) => {
                 "errorMessage" : err.message
             })
         })
+    }
+
+
+    /**
+     * Getting a single article by id
+     */
+    exports.get_one_article = async (req,res) => {
+        /**
+         * Get articleid from the request param
+         */
+        const { articleid } = req.params;
+
+        /**
+         * Run db query to get a single article
+         */
+
+         db.query('SELECT title, body FROM Articles WHERE articleid = $1', [articleid])
+         .then(article => {
+             if(article.rowCount <= 0) {
+                 res.status(404).json({
+                     "success" : false,
+                     "message" : "NOT FOUND",
+                     "data" : article.rowCount
+                 })
+             } else {
+                 res.status(200).json({
+                     "success" : true,
+                     "message" : "Article Found",
+                     "data" : article.rows[0]
+                 })
+             }
+         })
+         .catch(err => {
+             res.status(400).json({
+                 "success" : false,
+                 "message" : err.message
+             })
+         })
     }
