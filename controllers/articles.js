@@ -170,10 +170,10 @@
     }
 
     /**
-     * Update a single article
+     * Update a single article by title
      */
 
-    exports.update_one_article_title = async (req,res) => {
+    exports.update_one_article = async (req,res) => {
         /**
          * Get the article id from the req.params object
          */
@@ -188,11 +188,11 @@
           * Get title from the req.body
           */
 
-          const { title } = req.body;
+          const { title, body } = req.body;
          /**
           * Query database to update data
           */
-         db.query('UPDATE Articles SET title = $1 WHERE authorid = $2 AND articleid = $3 RETURNING articleid',[title,id,articleid])
+         db.query('UPDATE Articles SET title = $1, body = $2 WHERE authorid = $3 AND articleid = $4 RETURNING articleid',[title,body,id,articleid])
          .then(article => {
              if(article.rowCount <= 0) {
                  res.status(404).json({
@@ -203,7 +203,7 @@
              } else {
                  res.status(200).json({
                      "success" : true,
-                     "message" : "Article title updated successfully",
+                     "message" : "Article was updated successfully",
                      "article_id" : article.rows[0].articleid
                  });
              }
@@ -216,3 +216,5 @@
              console.log(err)
          })
     }
+
+    
