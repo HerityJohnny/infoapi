@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const  { signup, signin, logout, delete_author } = require("../controllers/user");
+const  { signup, signin, logout, delete_author, update_author_email } = require("../controllers/user");
 const { verify } = require('../middlewares/verify_auth');
 router.post("/signup", signup);
 router.post("/signin", signin);
@@ -10,10 +10,6 @@ router.post("/create_post", verify, (req,res) => {
 })
 router.post('/delete_author',verify, delete_author);
 router.post('/logout', verify, logout);
+router.patch('/updateEmail', verify, update_author_email)
 
 module.exports = router;
-
-
-
-
-
