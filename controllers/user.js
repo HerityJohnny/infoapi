@@ -360,3 +360,30 @@ exports.signup = async (req,res) => {
        }
 
    }
+
+   /**
+    * Get all articles
+    */
+   exports.get_all_posts = async (req,res) => {
+       /**
+        * You dont have to be authenticated for you to get all
+        */
+       db.query('SELECT body, title FROM Articles')
+       .then(articles => {
+           if(articles.rowCount <= 0) {
+               res.status(200).json({
+                   "message" : "No article found",
+                   "data" : articles.rowCount
+               });
+           }
+            res.status(200).json({
+                "data": articles.rows
+            });
+       })
+       .catch(err => {
+           res.status(400).json({
+               "success" : false,
+               "message" : err.message
+           })
+       })
+   }
