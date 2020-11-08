@@ -9,7 +9,9 @@ const cookieParser = require('cookie-parser');
 
 const session = require('express-session');
 
-const apiRoute = require('./routes/user');
+const authorRoute = require('./routes/user');
+const articleRoute = require('./routes/articles');
+
 /**
  *  Bring in neccessary middlewares
  */
@@ -25,7 +27,9 @@ const apiRoute = require('./routes/user');
  }));
 
 
-app.use('/api/v1', apiRoute);
+app.use('/api/v1/author', authorRoute);
+app.use('/api/v1/articles', articleRoute);
+
 
 app.get('/', (req,res) => {
     res.send("WEB APP UNDER CONSTRUCTION- VISIT THE API PAGE");
