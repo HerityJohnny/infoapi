@@ -301,3 +301,62 @@ exports.signup = async (req,res) => {
   /**
    * Code for crud operation for Articles
    */
+
+   exports.create_article = async (req,res) => {
+        //Store Date of Article creation
+        //few setups
+        let day, month, year;
+        day = new Date().getDay();
+        month = new Date().getMonth();
+        year = new Date().getFullYear();
+        const created_at = `${year}-${month}-${day}`;
+
+       /**
+        * First create a schema to validate data coming in
+        * Data Expected : title, body
+        */
+       const ArticleSchema = Joi.object().keys({
+           title: Joi.string().min(5).max(255).required(),
+           body: Joi.string().min(20).max(100000).required()
+       });
+
+       /**
+        * Validate Data 
+        */
+       const { error, value } = await ArticleSchema.validate(req.body);
+
+       if(!error) {
+           const { title, body } = value;
+           /**
+            * generate articleid using generateuuid
+            */
+           const articleid = generateuuid();
+
+           const { id } = req.user;
+           /**
+            * Insert data into queries
+            */
+           db.query('INSERT INTO Articles (title,body,articleid,authorid,created_at) VALUES ($1,$2,$3,$4,$5) RETURNING articleid,created_at', [title,body,articleid,id,created_at])
+           .then(article => {
+               res.status(200).json({
+                   "success" : true,
+                   "message": "Article created successfully",
+                   "articleid": article.rows[0].articleid,
+                   "created_at" : article.rows[0].created_at
+               });
+           })
+           .catch(err => {
+               res.status(400).json({
+                   "success" : false,
+                   "message" : "An error occured",
+                   "error": err.message
+               });
+           });
+       } else {
+           res.status(400).json({
+               "success" : false,
+               "message" : error.details[0].message
+           });
+       }
+
+   }
