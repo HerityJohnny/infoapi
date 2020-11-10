@@ -3,7 +3,6 @@ const { generateuuid } = require('../utils/uuid_generator');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const Joi = require("joi");
-// const { updateAuthor } = require("../utils/update_helper");
 
 /**
  * Code for CRUD Operation - Author
@@ -38,11 +37,11 @@ exports.signup = async (req,res) => {
 
      //Store Date of account creation
      //few setups
-     let day, month, year;
-     day = new Date().getDay();
+     let date, month, year;
+     date = new Date().getDate();
      month = new Date().getMonth();
      year = new Date().getFullYear();
-     const created_at = `${year}-${month}-${day}`;
+     const created_at = `${year}-${month}-${date}`;
 
 
      /**
@@ -73,8 +72,8 @@ exports.signup = async (req,res) => {
          * Insert data into database after verifying user dosent exist
          */
 
-         db.query("INSERT INTO Authors (authorid,firstname,lastname,email,username,password,skills,bio) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *",
-        [authorId,firstname,lastname,email,username,hashpassword,skills,bio])
+         db.query("INSERT INTO Authors (authorid,firstname,lastname,email,username,password,skills,bio,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *",
+        [authorId,firstname,lastname,email,username,hashpassword,skills,bio,created_at])
         .then(author => {
                 res.status(200).json({
                 "success" : true,
@@ -209,11 +208,11 @@ exports.signup = async (req,res) => {
 
     //Store Date when account was updated
      //few setups
-     let day, month, year;
-     day = new Date().getDay();
+     let date, month, year;
+     date = new Date().getDay();
      month = new Date().getMonth();
      year = new Date().getFullYear();
-     const updated_at = `${year}-${month}-${day}`;
+     const updated_at = `${year}-${month}-${date}`;
 
      /**
       * Get author id from req object
@@ -254,7 +253,6 @@ exports.signup = async (req,res) => {
             "message" : "Data is not valid",
             "error" : error.details[0].message
         });
-        console.log(error)
     }
  }  
 
@@ -270,21 +268,32 @@ exports.signup = async (req,res) => {
       */
      const { id } = req.user;
 
-     db.query("DELETE FROM Authors WHERE authorid = $1",[id])
+     //Delete all articles by this author
+     db.query('DELETE FROM Articles WHERE authorid = $1', [id])
      .then(resp => {
-         res.clearCookie("author");
-         res.status(200).json({
-             "success" : true,
-             "message" : "User Deleted Successfully",
-             "deleted": resp.rowCount
-         })
+        //delete was successful then delete author
+        db.query('DELETE FROM Authors WHERE authorid = $1',[id])
+        .then(author => {
+                res.clearCookie("author");
+                res.status(200).json({
+                    "success": true,
+                    "message": "Author delected successfully",
+                    "deleted" : author.rowCount
+                });
+        })
+        .catch(err => {
+            res.status(400).json({
+                "success": false,
+                "message" : "An error occured while delecting user " + err.message 
+            })
+        })
      })
      .catch(err => {
          res.status(400).json({
              "success" : false,
-             "message" : "An Error occured while delecting author"
-         })
-     })
+             "message" : err.message
+         });
+     });
  }
 /**
   * Logout user

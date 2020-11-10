@@ -9,12 +9,11 @@
    exports.create_article = async (req,res) => {
         //Store Date of Article creation
         //few setups -- bugs here
-        let day, month, year;
-        day = new Date().getDay();
+        let date, month, year;
+        date = new Date().getDate();
         month = new Date().getMonth();
         year = new Date().getFullYear();
-        const created_at = `${year}-${month}-${day}`;
-        console.log(created_at)
+        const created_at = `${year}-${month}-${date}`;
        /**
         * First create a schema to validate data coming in
         * Data Expected : title, body
@@ -40,13 +39,14 @@
            /**
             * Insert data into queries
             */
-           db.query('INSERT INTO Articles (title,body,articleid,authorid,username) VALUES ($1,$2,$3,$4,$5) RETURNING articleid, username', [title,body,articleid,id,username])
+           db.query('INSERT INTO Articles (title,body,articleid,authorid,username,created_at) VALUES ($1,$2,$3,$4,$5,$6) RETURNING articleid, username, created_at', [title,body,articleid,id,username,created_at])
            .then(article => {
                res.status(200).json({
                    "success" : true,
                    "message": "Article created successfully",
                    "articleid": article.rows[0].articleid,
-                   "Author username" : article.rows[0].username
+                   "Author username" : article.rows[0].username,
+                   "created_at" : article.rows[0].created_at
                });
            })
            .catch(err => {
@@ -174,6 +174,14 @@
      */
 
     exports.update_one_article = async (req,res) => {
+
+        //Store Date of Article creation
+        //few setups -- bugs here
+        let date, month, year;
+        date = new Date().getDate();
+        month = new Date().getMonth();
+        year = new Date().getFullYear();
+        const updated_at = `${year}-${month}-${date}`;
         /**
          * Get the article id from the req.params object
          */
@@ -192,7 +200,7 @@
          /**
           * Query database to update data
           */
-         db.query('UPDATE Articles SET title = $1, body = $2 WHERE authorid = $3 AND articleid = $4 RETURNING articleid',[title,body,id,articleid])
+         db.query('UPDATE Articles SET title = $1, body = $2,  updated_at = $3 WHERE authorid = $4 AND articleid = $5 RETURNING articleid',[title,body,updated_at,id,articleid])
          .then(article => {
              if(article.rowCount <= 0) {
                  res.status(404).json({
@@ -213,7 +221,6 @@
                  "success" : false,
                  "message" : err.message
              });
-             console.log(err)
          })
     }
 
