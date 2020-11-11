@@ -253,7 +253,6 @@ exports.signup = async (req,res) => {
             "message" : "Data is not valid",
             "error" : error.details[0].message
         });
-        console.log(error)
     }
  }  
 
@@ -269,21 +268,32 @@ exports.signup = async (req,res) => {
       */
      const { id } = req.user;
 
-     db.query("DELETE FROM Authors WHERE authorid = $1",[id])
+     //Delete all articles by this author
+     db.query('DELETE FROM Articles WHERE authorid = $1', [id])
      .then(resp => {
-         res.clearCookie("author");
-         res.status(200).json({
-             "success" : true,
-             "message" : "User Deleted Successfully",
-             "deleted": resp.rowCount
-         })
+        //delete was successful then delete author
+        db.query('DELETE FROM Authors WHERE authorid = $1',[id])
+        .then(author => {
+                res.clearCookie("author");
+                res.status(200).json({
+                    "success": true,
+                    "message": "Author delected successfully",
+                    "deleted" : author.rowCount
+                });
+        })
+        .catch(err => {
+            res.status(400).json({
+                "success": false,
+                "message" : "An error occured while delecting user " + err.message 
+            })
+        })
      })
      .catch(err => {
          res.status(400).json({
              "success" : false,
-             "message" : "An Error occured while delecting author"
-         })
-     })
+             "message" : err.message
+         });
+     });
  }
 /**
   * Logout user

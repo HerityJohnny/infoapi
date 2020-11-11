@@ -14,7 +14,6 @@
         month = new Date().getMonth();
         year = new Date().getFullYear();
         const created_at = `${year}-${month}-${date}`;
-        console.log(created_at);
        /**
         * First create a schema to validate data coming in
         * Data Expected : title, body
@@ -201,7 +200,7 @@
          /**
           * Query database to update data
           */
-         db.query('UPDATE Articles SET title = $1, body = $2  updated_at = $3 WHERE authorid = $4 AND articleid = $5 RETURNING articleid',[title,body,updated_at,id,articleid])
+         db.query('UPDATE Articles SET title = $1, body = $2,  updated_at = $3 WHERE authorid = $4 AND articleid = $5 RETURNING articleid',[title,body,updated_at,id,articleid])
          .then(article => {
              if(article.rowCount <= 0) {
                  res.status(404).json({
@@ -222,7 +221,6 @@
                  "success" : false,
                  "message" : err.message
              });
-             console.log(err)
          })
     }
 
