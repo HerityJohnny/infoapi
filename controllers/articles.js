@@ -224,4 +224,35 @@
          })
     }
 
+    /**
+     * Get all articles by a single author
+     */
+    exports.get_author_articles = async (req,res) => {
+        /**
+         * Get id from req.user
+         */
+        const { authorid } = req.params;
+
+        db.query('SELECT title, body, username FROM Articles WHERE authorid = $1', [authorid])
+        .then(articles => {
+            if(articles.rowCount <= 0) {
+                res.status(404).json({
+                    "success" : false,
+                    "message" : "These Author has not written an articles"
+                });
+            } else {
+                res.status(200).json({
+                    "success" : true,
+                    "data" : articles.rows
+                });
+            }
+        })
+        .catch(err => {
+            res.status(400).json({
+                "success" : false,
+                "message" : err.message
+            });
+        });
+    }
+
     
