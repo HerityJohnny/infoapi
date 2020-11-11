@@ -229,7 +229,7 @@
      */
     exports.get_author_articles = async (req,res) => {
         /**
-         * Get id from req.user
+         * Get id from req.params
          */
         const { authorid } = req.params;
 
@@ -255,4 +255,36 @@
         });
     }
 
-    
+    /**
+     * Delete all author articles
+     * Require author to be authenticated in order to perform action 
+     */
+
+     exports.delete_all_articles = async (req,res) => {
+         /**
+          * Get authorid from req.user
+          */
+         const { id } = req.user;
+
+         db.query('DELETE FROM Articles WHERE authorid = $1', [id])
+         .then(deleted => {
+             if(deleted.rowCount <= 0) {
+                 res.status(404).json({
+                     "success" : false,
+                     "message" : "No articles avaliable to be delected"
+                 });
+             } else {
+                 res.status(200).json({
+                     "success" : true,
+                     "delected" : deleted.rowCount
+                 });
+             }
+         })
+         .catch(err => {
+             res.status(400).json({
+                 "success" : false,
+                 "message" : err.message
+             });
+             console.log(err)
+         });
+     }
