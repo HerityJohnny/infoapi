@@ -425,6 +425,64 @@ exports.signup = async (req,res) => {
     }
  }  
 
+
+  /**
+ * Update author Skills
+ */
+
+ exports.update_author_skill = async (req,res) => {
+
+    //Store Date when account was updated
+     //few setups
+     let date, month, year;
+     date = new Date().getDay();
+     month = new Date().getMonth();
+     year = new Date().getFullYear();
+     const updated_at = `${year}-${month}-${date}`;
+
+     /**
+      * Get author id from req object
+      */
+     const { id } = req.user;
+    /**
+     * Validate data with joi
+     */
+    const ValidString = Joi.object().keys({
+                skills: Joi.string().trim().required()
+    })
+    const {error , value} = await ValidString.validate(req.body);
+    if(!error) {
+        /**
+      * Get data to update from value
+      */
+        const { skills } = value;
+        db.query('UPDATE Authors SET skills  = $1, updated_at = $2 WHERE authorid = $3 RETURNING skills, updated_at', [skills,updated_at,id])
+        .then(resp => {
+            res.status(200).json({
+             "success" : true,
+             "message" : `Updated Skills Successfully`,
+             "Updated data" : resp.rows[0].skills,
+             "Updated at" : resp.rows[0].updated_at
+         });
+        })
+        .catch(err => {
+             res.status(400).json({
+             "success" : false,
+             "message" : "An Error Occured when Updating",
+             "error" : err.message
+         })
+        });
+
+    } else {
+        res.status(400).json({
+            "success": false,
+            "message" : "Data is not valid",
+            "error" : error.details[0].message
+        });
+    }
+ }  
+
+ 
 /**
  * 
  * @param {Delete} req 
