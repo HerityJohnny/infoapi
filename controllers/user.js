@@ -306,4 +306,26 @@ exports.signup = async (req,res) => {
     })
   }
 
+/**
+ * get all authors ids to query data from articles
+ */
 
+ exports.get_all_authors_ids = async (req,res) => {
+     /**
+      * This query does not need you to be authenticated
+      */
+
+      db.query('SELECT authorid FROM Authors')
+      .then(ids => {
+          res.status(200).json({
+              "success" : true,
+              "ids" : ids.rows
+          });
+      })
+      .catch(err => {
+          res.status(400).json({
+              "success" : true,
+              "message" : err.message
+          });
+      })
+ }

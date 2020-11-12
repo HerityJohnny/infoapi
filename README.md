@@ -1,2 +1,2 @@
 # infoapi
-An api for getting informations
+An api for getting informations a users using rest api and graphql 
