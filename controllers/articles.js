@@ -285,6 +285,28 @@
                  "success" : false,
                  "message" : err.message
              });
-             console.log(err)
          });
+     }
+
+     /**
+      * Get all articles id to be used to query the api
+      */
+     exports.get_all_article_id = async (req,res) => {
+         /**
+          * Querying this endpoint does not require user to be authenticated
+          */
+
+          db.query('SELECT articleid FROM Articles')
+          .then(ids => {
+              res.status(200).json({
+                  "success" : true,
+                  "ids" : ids.rows
+              })
+          })
+          .catch(err => {
+              res.status(400).json({
+                  "success" : false,
+                  "message" : err.message
+              });
+          });
      }
