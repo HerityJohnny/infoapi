@@ -482,6 +482,100 @@ exports.signup = async (req,res) => {
     }
  }  
 
+   /**
+ * Update author Skills
+ */
+
+ exports.update_author_password = async (req,res) => {
+
+    //Store Date when account was updated
+     //few setups
+     let date, month, year;
+     date = new Date().getDay();
+     month = new Date().getMonth();
+     year = new Date().getFullYear();
+     const updated_at = `${year}-${month}-${date}`;
+
+     /**
+      * Get author id from req object
+      */
+     const { id } = req.user;
+    /**
+     * Validate data with joi
+     */
+    const ValidString = Joi.object().keys({
+            olderpassword: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{8,30}')).required(),
+            newpassword: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{8,30}')).required()
+    })
+    const {error , value} = await ValidString.validate(req.body);
+    if(!error) {
+        /**
+      * Get data to update from value
+      */
+        const { olderpassword, newpassword } = value;
+        //Check if older password matches the one in the database
+        db.query('SELECT password FROM Authors')
+        .then(pass => {
+            //check if password match using bcrypt module
+            bcrypt.compare(olderpassword, pass.rows[0].password)
+            .then(passw => {
+                if(!passw) {
+                    res.status(400).json({
+                        "success" : false,
+                        "message" : "Older password is incorrect"
+                    });
+                } else {
+                    //Password matches - then update it with new password and hash it before saving
+                    bcrypt.genSalt(10, (err,salt) => {
+                        bcrypt.hash(newpassword, salt)
+                        .then(newpass => {
+                            //save the hashed password into database
+                            db.query('UPDATE Authors SET password = $1, updated_at = $2 WHERE authorid = $3  RETURNING updated_at',[newpass,updated_at,id])
+                            .then(data => {
+                                res.status(200).json({
+                                    "success" : true,
+                                    "message": "Password updated successfully",
+                                    "updated_at" : data.rows[0].updated_at,
+                                    "updated" : data.rowCount
+                                });
+                            })
+                            .catch(err => {
+                                res.status(400).json({
+                                    "success" : false,
+                                    "message" : err.message
+                                });
+                            });
+                        })
+                        .catch(err => {
+                            res.status(400).json({
+                                "success" : false,
+                                "message" : err.message
+                            });
+                        });
+                    });
+                }
+            })
+            .catch(err => {
+                res.status(400).json({
+                    'success' : false,
+                    "message" : err.message
+                });
+            });
+        })
+        .catch(err => {
+            res.status(400).json({
+                "success" : false,
+                "message" : err.message
+            });
+        });
+    } else {
+        res.status(400).json({
+            "success": false,
+            "message" : "Data is not valid",
+            "error" : error.details[0].message
+        });
+    }
+ }  
  
 /**
  * 

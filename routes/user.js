@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const  { signup, signin, logout, delete_author, update_author_email, get_all_authors_ids, update_author_firstname, update_author_lastname, update_author_username, update_author_skill } = require("../controllers/user");
+const  { signup, signin, logout, delete_author, update_author_email, get_all_authors_ids, update_author_firstname, update_author_lastname, update_author_username, update_author_skill, update_author_password } = require("../controllers/user");
 const { verify } = require('../middlewares/verify_auth');
 router.post("/signup", signup);
 router.get("/authorids", get_all_authors_ids);
@@ -11,5 +11,6 @@ router.patch('/update/firstname', verify, update_author_firstname);
 router.patch('/update/lastname', verify, update_author_lastname);
 router.patch('/update/username', verify, update_author_username);
 router.patch('/update/skills', verify, update_author_skill);
+router.patch('/update/password', verify, update_author_password);
 
 module.exports = router;
