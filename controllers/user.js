@@ -482,8 +482,8 @@ exports.signup = async (req,res) => {
     }
  }  
 
-   /**
- * Update author Skills
+/**
+ * Update author Password
  */
 
  exports.update_author_password = async (req,res) => {
@@ -576,6 +576,63 @@ exports.signup = async (req,res) => {
         });
     }
  }  
+ 
+ /**
+ * Update author Bio
+ */
+
+ exports.update_author_bio = async (req,res) => {
+
+    //Store Date when account was updated
+     //few setups
+     let date, month, year;
+     date = new Date().getDay();
+     month = new Date().getMonth();
+     year = new Date().getFullYear();
+     const updated_at = `${year}-${month}-${date}`;
+
+     /**
+      * Get author id from req object
+      */
+     const { id } = req.user;
+    /**
+     * Validate data with joi
+     */
+    const ValidString = Joi.object().keys({
+            bio: Joi.string().trim().min(5).max(300).required()
+    })
+    const {error , value} = await ValidString.validate(req.body);
+    if(!error) {
+        /**
+      * Get data to update from value
+      */
+        const { bio } = value;
+        db.query('UPDATE Authors SET bio  = $1, updated_at = $2 WHERE authorid = $3 RETURNING bio, updated_at', [bio,updated_at,id])
+        .then(resp => {
+            res.status(200).json({
+             "success" : true,
+             "message" : `Updated Bio Successfully`,
+             "Updated data" : resp.rows[0].bio,
+             "Updated at" : resp.rows[0].updated_at
+         });
+        })
+        .catch(err => {
+             res.status(400).json({
+             "success" : false,
+             "message" : "An Error Occured when Updating",
+             "error" : err.message
+         })
+        });
+
+    } else {
+        res.status(400).json({
+            "success": false,
+            "message" : "Data is not valid",
+            "error" : error.details[0].message
+        });
+    }
+ }  
+
  
 /**
  * 
