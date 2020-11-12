@@ -301,7 +301,7 @@
               res.status(200).json({
                   "success" : true,
                   "ids" : ids.rows
-              })
+              });
           })
           .catch(err => {
               res.status(400).json({

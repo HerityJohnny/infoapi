@@ -3,7 +3,7 @@ const { get_all_articles, get_one_article, delete_one_article, create_article, u
 const { verify } = require('../middlewares/verify_auth');
 
 router.get('/', get_all_articles);
-router.get('/ids', get_all_article_id);
+router.get('/articleids', get_all_article_id);
 router.get('/:authorid', get_author_articles);
 router.get('/:articleid', get_one_article);
 router.delete('/delete/:articleid',verify, delete_one_article);
