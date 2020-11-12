@@ -347,7 +347,7 @@ exports.signup = async (req,res) => {
         .then(resp => {
             res.status(200).json({
              "success" : true,
-             "message" : `Updated Firstname Successfully`,
+             "message" : `Updated Lastname Successfully`,
              "Updated data" : resp.rows[0].lastname,
              "Updated at" : resp.rows[0].updated_at
          });
@@ -369,6 +369,61 @@ exports.signup = async (req,res) => {
     }
  }  
 
+  /**
+ * Update author username
+ */
+
+ exports.update_author_username = async (req,res) => {
+
+    //Store Date when account was updated
+     //few setups
+     let date, month, year;
+     date = new Date().getDay();
+     month = new Date().getMonth();
+     year = new Date().getFullYear();
+     const updated_at = `${year}-${month}-${date}`;
+
+     /**
+      * Get author id from req object
+      */
+     const { id } = req.user;
+    /**
+     * Validate data with joi
+     */
+    const ValidString = Joi.object().keys({
+            username: Joi.string().trim().alphanum().min(3).max(30)
+    })
+    const {error , value} = await ValidString.validate(req.body);
+    if(!error) {
+        /**
+      * Get data to update from value
+      */
+        const { username } = value;
+        db.query('UPDATE Authors SET username  = $1, updated_at = $2 WHERE authorid = $3 RETURNING username, updated_at', [username,updated_at,id])
+        .then(resp => {
+            res.status(200).json({
+             "success" : true,
+             "message" : `Updated Username Successfully`,
+             "Updated data" : resp.rows[0].username,
+             "Updated at" : resp.rows[0].updated_at
+         });
+        })
+        .catch(err => {
+             res.status(400).json({
+             "success" : false,
+             "message" : "An Error Occured when Updating",
+             "error" : err.message
+         })
+        });
+
+    } else {
+        res.status(400).json({
+            "success": false,
+            "message" : "Data is not valid",
+            "error" : error
+        });
+    }
+ }  
 
 /**
  * 
