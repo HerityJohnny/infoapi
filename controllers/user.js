@@ -391,7 +391,7 @@ exports.signup = async (req,res) => {
      * Validate data with joi
      */
     const ValidString = Joi.object().keys({
-            username: Joi.string().trim().alphanum().min(3).max(30)
+            username: Joi.string().trim().alphanum().min(3).max(30).required()
     })
     const {error , value} = await ValidString.validate(req.body);
     if(!error) {
